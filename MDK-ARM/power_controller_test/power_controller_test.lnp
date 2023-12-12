@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"power_controller_test\startup_stm32f030x6.o"
+"power_controller_test\main.o"
+"power_controller_test\stm32f0xx_it.o"
+"power_controller_test\stm32f0xx_hal_msp.o"
+"power_controller_test\stm32f0xx_hal_tim.o"
+"power_controller_test\stm32f0xx_hal_tim_ex.o"
+"power_controller_test\stm32f0xx_hal_rcc.o"
+"power_controller_test\stm32f0xx_hal_rcc_ex.o"
+"power_controller_test\stm32f0xx_hal.o"
+"power_controller_test\stm32f0xx_hal_i2c.o"
+"power_controller_test\stm32f0xx_hal_i2c_ex.o"
+"power_controller_test\stm32f0xx_hal_gpio.o"
+"power_controller_test\stm32f0xx_hal_dma.o"
+"power_controller_test\stm32f0xx_hal_cortex.o"
+"power_controller_test\stm32f0xx_hal_pwr.o"
+"power_controller_test\stm32f0xx_hal_pwr_ex.o"
+"power_controller_test\stm32f0xx_hal_flash.o"
+"power_controller_test\stm32f0xx_hal_flash_ex.o"
+"power_controller_test\stm32f0xx_hal_exti.o"
+"power_controller_test\system_stm32f0xx.o"
+--strict --scatter "power_controller_test\power_controller_test.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "power_controller_test.map" -o power_controller_test\power_controller_test.axf
