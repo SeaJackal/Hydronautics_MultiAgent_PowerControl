@@ -55,7 +55,7 @@ typedef enum
 
 /* USER CODE BEGIN PV */
 PowerMashineState power_state = PowerMashineState_OFF;
-MotorMashineState motor_state = MotorMashineState_OFF;
+MotorMashineState motor_state = MotorMashineState_BLOCKED;
 uint8_t state_changed = 1;
 
 bool button_flag = false;
