@@ -59,10 +59,10 @@ MotorMashineState motor_state = MotorMashineState_BLOCKED;
 uint8_t state_changed = 1;
 
 bool button_flag = false;
-bool button4 = false;
-bool button5 = false;
-bool button6 = false;
-bool button7 = false;
+volatile bool button_A = false;
+volatile bool button_B = false;
+volatile bool button_C = false;
+volatile bool button_D = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -121,19 +121,19 @@ int main(void)
 			switch(motor_state) //Motor State Mashine next state
 			{
 				case MotorMashineState_ON:
-					if(button_flag || button4)
+					if(button_flag || button_C || button_D)
 						motor_state = MotorMashineState_BLOCKED;
 					else if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)!=GPIO_PIN_SET) || (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)!=GPIO_PIN_RESET))
 						motor_state = MotorMashineState_OFF;
 					break;
 				case MotorMashineState_OFF:
-					if(button_flag || button4)
+					if(button_flag || button_C || button_D)
 						motor_state = MotorMashineState_BLOCKED;
 					else if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)==GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)==GPIO_PIN_RESET))
 						motor_state = MotorMashineState_ON;
 					break;
 				case MotorMashineState_BLOCKED:
-					if(button_flag || button5)
+					if(button_flag || button_C)
 						motor_state = MotorMashineState_OFF;
 					break;
 			}
@@ -144,19 +144,24 @@ int main(void)
 				if(power_state == PowerMashineState_OFF)
 					power_state = PowerMashineState_BoatComputerON;
 			}
-			else if(button5 || button7) 
+			else if(button_C) 
+			{
+				if(power_state == PowerMashineState_OFF)
+					power_state = PowerMashineState_BoatComputerON;
+			}
+			else if(button_A) 
 				power_state = PowerMashineState_BoatComputerON;			
-			else if(button6) //STATE 3 ( RP, WIFI, UWB, UWave)
+			else if(button_B) //STATE 3 ( RP, WIFI, UWB, UWave)
 				power_state = PowerMashineState_UWaveON;
-			else if(button4) //STATE 5 ( ALL OFF)
+			else if(button_D) //STATE 5 ( ALL OFF)
 				power_state = PowerMashineState_OFF;
 			
 			state_changed = 0;
 			button_flag = false;
-			button4 = false;
-			button5 = false;
-			button6 = false;
-			button7 = false;
+			button_A = false;
+			button_B = false;
+			button_C = false;
+			button_D = false;
 		}
 		else // Sync control (Raspberry Pi)
 		{
@@ -307,22 +312,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
    if(GPIO_Pin == GPIO_PIN_4)
    {
-      button4 = true;
+      button_D = true;
    }
 
    if(GPIO_Pin == GPIO_PIN_5)
    {
-	   button5 = true;
+	   button_C = true;
    }
 
    if(GPIO_Pin == GPIO_PIN_6)
    {
-	   button6 = true;
+	   button_B = true;
    }
 
    if(GPIO_Pin == GPIO_PIN_7)
    {
-	   button7 = true;
+	   button_A = true;
    }
 
 
