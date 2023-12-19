@@ -49,6 +49,16 @@ typedef enum
 	MotorMashineState_ON,
 	MotorMashineState_BLOCKED
 } MotorMashineState;
+
+typedef enum
+{
+	Button_A,
+	Button_B,
+	Button_C,
+	Button_D,
+	Button_TOP,
+	Button_EMPTY
+} ButtonName;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,6 +67,7 @@ typedef enum
 PowerMashineState power_state = PowerMashineState_OFF;
 MotorMashineState motor_state = MotorMashineState_BLOCKED;
 uint8_t state_changed = 1;
+ButtonName button = Button_EMPTY;
 
 bool button_flag = false;
 volatile bool button_A = false;
@@ -121,53 +132,60 @@ int main(void)
 			switch(motor_state) //Motor State Mashine next state
 			{
 				case MotorMashineState_ON:
-					if(button_flag || button_C || button_D)
-						motor_state = MotorMashineState_BLOCKED;
-					else if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)!=GPIO_PIN_SET) || (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)!=GPIO_PIN_RESET))
-						motor_state = MotorMashineState_OFF;
-					break;
 				case MotorMashineState_OFF:
-					if(button_flag || button_C || button_D)
-						motor_state = MotorMashineState_BLOCKED;
-					else if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)==GPIO_PIN_SET) && (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)==GPIO_PIN_RESET))
-						motor_state = MotorMashineState_ON;
+					switch(button)
+					{
+						case Button_TOP:
+						case Button_C:
+						case Button_D:
+							motor_state = MotorMashineState_BLOCKED;
+							break;
+						default:
+							break;
+					}
 					break;
 				case MotorMashineState_BLOCKED:
-					if(button_flag || button_C)
-						motor_state = MotorMashineState_OFF;
+					switch(button)
+					{
+						case Button_TOP:
+						case Button_C:
+							motor_state = MotorMashineState_OFF;
+							break;
+						default:
+							break;
+					}
 					break;
 			}
 			
 			// Power state mashine next state
-			if(button_flag) 
+			switch(button)
 			{
-				if(power_state == PowerMashineState_OFF)
-					power_state = PowerMashineState_BoatComputerON;
+				case Button_TOP:
+				case Button_C:
+					if(power_state == PowerMashineState_OFF)
+						power_state = PowerMashineState_BoatComputerON;
+					break;
+				case Button_A:
+					power_state = PowerMashineState_BoatComputerON;			
+					break;
+				case Button_B:
+					power_state = PowerMashineState_UWaveON;
+					break;
+				case Button_D:
+					power_state = PowerMashineState_OFF;
+					break;
+				default:
+					break;
 			}
-			else if(button_C) 
-			{
-				if(power_state == PowerMashineState_OFF)
-					power_state = PowerMashineState_BoatComputerON;
-			}
-			else if(button_A) 
-				power_state = PowerMashineState_BoatComputerON;			
-			else if(button_B) //STATE 3 ( RP, WIFI, UWB, UWave)
-				power_state = PowerMashineState_UWaveON;
-			else if(button_D) //STATE 5 ( ALL OFF)
-				power_state = PowerMashineState_OFF;
-			
 			state_changed = 0;
-			button_flag = false;
-			button_A = false;
-			button_B = false;
-			button_C = false;
-			button_D = false;
+			button = Button_EMPTY;
 		}
 		else // Sync control (Raspberry Pi)
 		{
 			switch(motor_state)
 			{
-				case MotorMashineState_ON:if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)!=GPIO_PIN_SET) || (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)!=GPIO_PIN_RESET))
+				case MotorMashineState_ON:
+					if((HAL_GPIO_ReadPin(GPIOA,RP0_Pin)!=GPIO_PIN_SET) || (HAL_GPIO_ReadPin(GPIOA,RP1_Pin)!=GPIO_PIN_RESET))
 						motor_state = MotorMashineState_OFF;
 					break;
 				case MotorMashineState_OFF:
@@ -310,32 +328,27 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-   if(GPIO_Pin == GPIO_PIN_4)
-   {
-      button_D = true;
-   }
-
-   if(GPIO_Pin == GPIO_PIN_5)
-   {
-	   button_C = true;
-   }
-
-   if(GPIO_Pin == GPIO_PIN_6)
-   {
-	   button_B = true;
-   }
-
-   if(GPIO_Pin == GPIO_PIN_7)
-   {
-	   button_A = true;
-   }
-
-
-   if(GPIO_Pin == GPIO_PIN_3)
-   {
-	   button_flag = true;
-   }
-	 
+	switch(GPIO_Pin)
+	{
+		case GPIO_PIN_4:
+			button = Button_D;
+			break;
+		case GPIO_PIN_5:
+			button = Button_C;
+			break;
+		case GPIO_PIN_6:
+			button = Button_B;
+			break;
+		case GPIO_PIN_7:
+			button = Button_A;
+			break;
+		case GPIO_PIN_3:
+			button = Button_TOP;
+			break;
+		default:
+			button = Button_EMPTY;
+			break;
+	}
 	 state_changed = 1;
 }
 /* USER CODE END 4 */
